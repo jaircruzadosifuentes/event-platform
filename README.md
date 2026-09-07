@@ -31,8 +31,8 @@ EventPlatform/
 
 * React
 * Vite
-* JavaScript
-* Bootstrap
+* TypeScript
+* tailwind
 * Node.js
 * npm
 
