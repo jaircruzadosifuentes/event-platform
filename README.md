@@ -214,21 +214,3 @@ Para detener el backend:
 docker compose down
 ```
 
----
-
-# Configuración
-
-Las configuraciones que contengan información sensible no deben subirse al repositorio.
-
-No incluir en Git:
-
-* Contraseñas
-* Connection strings con credenciales
-* API Keys
-* Tokens
-* Secretos
-* Certificados privados
-
-Utiliza variables de entorno o archivos de configuración locales cuando corresponda.
-
----
