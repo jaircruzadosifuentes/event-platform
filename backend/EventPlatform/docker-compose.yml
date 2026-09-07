@@ -1,0 +1,145 @@
+services:
+
+  eventservice:
+    build:
+      context: .
+      dockerfile: EventService.Api/Dockerfile
+    container_name: eventplatform-eventservice
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+
+      ConnectionStrings__Redis: redis:6379
+
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=EventServiceDb;User Id=sa;Password=EventPlatform@2026!;TrustServerCertificate=True;"
+
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Username: admin
+      RabbitMq__Password: admin
+
+    depends_on:
+      redis:
+        condition: service_started
+
+      rabbitmq:
+        condition: service_healthy
+
+      db-init:
+        condition: service_completed_successfully
+
+
+  notificationservice:
+    build:
+      context: .
+      dockerfile: NotificationService.Api/Dockerfile
+    container_name: eventplatform-notificationservice
+    ports:
+      - "8081:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=NotificationServiceDb;User Id=sa;Password=EventPlatform@2026!;TrustServerCertificate=True;"
+
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Username: admin
+      RabbitMq__Password: admin
+
+      Smtp__Host: mailpit
+      Smtp__Port: 1025
+
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+      mailpit:
+        condition: service_started
+
+      db-init:
+        condition: service_completed_successfully
+
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: eventplatform-rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: eventplatform-mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+
+  redis:
+    image: redis:7
+    container_name: eventplatform-redis
+    ports:
+      - "6379:6379"
+
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: eventplatform-sqlserver
+    ports:
+      - "1433:1433"
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "EventPlatform@2026!"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+
+
+  db-init:
+    image: mcr.microsoft.com/mssql-tools:latest
+    container_name: eventplatform-db-init
+    depends_on:
+      sqlserver:
+        condition: service_started
+    volumes:
+      - ./database/init:/scripts
+    command: >
+      /bin/bash -c "
+      echo 'Esperando SQL Server...';
+      until /opt/mssql-tools/bin/sqlcmd
+      -S sqlserver,1433
+      -U sa
+      -P 'EventPlatform@2026!'
+      -C
+      -Q 'SELECT 1'
+      > /dev/null 2>&1;
+      do
+        echo 'SQL Server todavía no está listo...';
+        sleep 2;
+      done;
+      echo 'SQL Server listo.';
+      echo 'Ejecutando init.sql...';
+      /opt/mssql-tools/bin/sqlcmd
+      -S sqlserver,1433
+      -U sa
+      -P 'EventPlatform@2026!'
+      -C
+      -i /scripts/init.sql;
+      echo 'Inicialización de base de datos completada.';
+      "
+
+
+volumes:
+  rabbitmq_data:
+  sqlserver_data:

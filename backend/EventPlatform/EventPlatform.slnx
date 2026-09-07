@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/database/" />
+  <Folder Name="/database/init/">
+    <File Path="init.sql" />
+  </Folder>
+  <Folder Name="/Elementos de la solución/">
+    <File Path="docker-compose.yml" />
+  </Folder>
+  <Project Path="EventPlataform.Contracts/EventPlataform.Contracts.csproj" />
+  <Project Path="EventService.Api/EventService.Api.csproj" />
+  <Project Path="EventService.Application/EventService.Application.csproj" />
+  <Project Path="EventService.Domain/EventService.Domain.csproj" />
+  <Project Path="EventService.Infraestructure/EventService.Infraestructure.csproj" />
+  <Project Path="NotificationService.Api/NotificationService.Api.csproj" />
+  <Project Path="NotificationService.Application/NotificationService.Application.csproj" />
+  <Project Path="NotificationService.Domain/NotificationService.Domain.csproj" />
+  <Project Path="NotificationService.Infraestructure/NotificationService.Infraestructure.csproj" />
+</Solution>

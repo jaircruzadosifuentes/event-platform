@@ -1,0 +1,23 @@
+# Visual Studio
+.vs/
+**/.vs/
+
+# .NET
+**/bin/
+**/obj/
+
+# Node / React
+**/node_modules/
+**/dist/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Visual Studio user files
+*.user
+*.suo
+
+# Logs
+*.log
